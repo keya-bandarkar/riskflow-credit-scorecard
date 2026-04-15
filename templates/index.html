@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood of the Market & Credit Evaluator</title>
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Base Styling -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="nav-container">
+        <h2>🏦 RiskFlow <span class="badge">Scorecard Engine</span></h2>
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="calculator">Calculator</button>
+            <button class="tab-btn" data-tab="dashboard">Dashboard</button>
+        </div>
+    </div>
+
+    <main class="main-content">
+        <!-- Calculator Tab -->
+        <section id="calculator" class="tab-pane active">
+            <div class="layout-grid">
+                <!-- Form Area -->
+                <div class="glass-card form-section">
+                    <div class="card-header">
+                        <h3>Applicant Details</h3>
+                        <p>Fill out the applicant parameters to calculate live credit risk.</p>
+                    </div>
+                    <!-- Dynamically populated via JS -->
+                    <form id="score-form" class="dynamic-form">
+                        <div id="form-spinner" class="spinner"></div>
+                        <div id="form-grid" class="form-grid"></div>
+                        <button type="submit" class="submit-btn" style="display: none;" id="calc-btn">Evaluate Profile ✨</button>
+                    </form>
+                </div>
+
+                <!-- Result Area -->
+                <div class="glass-card result-section">
+                    <div class="score-display">
+                        <div class="score-ring">
+                            <h1 id="total-score">---</h1>
+                            <p class="score-label">Credit Score</p>
+                        </div>
+                    </div>
+                    
+                    <div class="breakdown-container">
+                        <h4>Impact Breakdown</h4>
+                        <div id="score-breakdown" class="breakdown-list">
+                            <p class="muted">Submit form to view attribute impacts.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Tab -->
+        <section id="dashboard" class="tab-pane">
+            <div class="glass-card dashboard-card">
+                <h3>Model Performance Metrics</h3>
+                <p class="muted">Powered by scikit-learn Logistic Regression engine</p>
+                
+                <div class="charts-grid">
+                    <div class="chart-box">
+                        <h4>Score Distribution</h4>
+                        <img src="/images/score_distribution.png" alt="Score Distribution">
+                    </div>
+                    <div class="chart-box">
+                        <h4>ROC Curve</h4>
+                        <img src="/images/roc_curve.png" alt="ROC Curve">
+                    </div>
+                    <div class="chart-box feature-chart">
+                        <h4>Information Value (IV) Ranking</h4>
+                        <img src="/images/feature_importance.png" alt="Feature Importance">
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
