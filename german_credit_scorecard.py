@@ -39,16 +39,13 @@ df_german['target'] = df_german['class'].apply(lambda x: 0 if x == 'good' else 1
 df_german.drop('class', axis=1, inplace=True)
 
 # Load Australian Credit Dataset
-url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/australian/australian.dat'
-urllib.request.urlretrieve(url, 'australian.dat')
+url_aus = 'https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/australian/australian.dat'
+urllib.request.urlretrieve(url_aus, 'australian.dat')
 df_australian = pd.read_csv('australian.dat', sep=r'\s+', header=None, names=['target'] + [f'A{i}' for i in range(1,15)])
-print("Australian data shape:", df_australian.shape)
-print("Target unique:", df_australian['target'].unique())
-print("Nulls:", df_australian.isnull().sum().sum())
 df_australian['target'] = df_australian['target'].astype(int)
 
 # Rename columns to match German
-column_mapping = {
+column_mapping_aus = {
     'A1': 'checking_status',
     'A2': 'duration',
     'A3': 'credit_history',
@@ -65,10 +62,37 @@ column_mapping = {
     'A14': 'other_payment_plans',
     'target': 'target'
 }
-df_australian.rename(columns=column_mapping, inplace=True)
+df_australian.rename(columns=column_mapping_aus, inplace=True)
+
+# Load Japanese Credit Dataset
+url_jap = 'https://archive.ics.uci.edu/ml/machine-learning-databases/credit-screening/crx.data'
+urllib.request.urlretrieve(url_jap, 'japanese.dat')
+df_japanese = pd.read_csv('japanese.dat', header=None, names=['target'] + [f'A{i}' for i in range(1,15)])
+df_japanese['target'] = df_japanese['target'].apply(lambda x: 0 if x == '+' else 1).astype(int)
+
+# Rename columns to match German (approximate)
+column_mapping_jap = {
+    'A1': 'checking_status',
+    'A2': 'duration',
+    'A3': 'credit_history',
+    'A4': 'purpose',
+    'A5': 'credit_amount',
+    'A6': 'savings_status',
+    'A7': 'employment',
+    'A8': 'installment_commitment',
+    'A9': 'personal_status',
+    'A10': 'other_parties',
+    'A11': 'residence_since',
+    'A12': 'property_magnitude',
+    'A13': 'age',
+    'A14': 'other_payment_plans',
+    'target': 'target'
+}
+df_japanese.rename(columns=column_mapping_jap, inplace=True)
 
 # Combine datasets
-df = pd.concat([df_german, df_australian], ignore_index=True)
+df = pd.concat([df_german, df_australian, df_japanese], ignore_index=True)
+
 print("-" * 50)
 print("Combined Data Shape:", df.shape)
 print("Target Distribution:")
