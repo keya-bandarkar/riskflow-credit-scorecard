@@ -20,6 +20,23 @@ An end-to-end Machine Learning pipeline and modern Web Application for credit ri
 - Model diagnostics: `score_distribution.png`, `roc_curve.png`, `feature_importance.png`
 - Data files: `german.dat`, `australian.dat`, `japanese.dat`
 
+## System Architecture & Diagrams
+
+This project includes **5 comprehensive architecture diagrams** (Mermaid format):
+
+1. **Detailed System Architecture** - Complete 7-layer pipeline (data → output)
+2. **Component Interaction** - How components communicate with each other
+3. **Deployment Architecture** - Development to production deployment flow
+4. **Data Flow Diagram** - Step-by-step data transformations and processing
+5. **Components & Dependencies** - Technical modules and function relationships
+
+**View Diagrams:**
+- 📖 [Diagrams Quick Start Guide](DIAGRAMS_GUIDE.md) - How to view/convert to PNG
+- 📋 [Architecture Documentation](ARCHITECTURE_DIAGRAMS.md) - Detailed descriptions of each diagram
+- 📊 [System Architecture Details](SYSTEM_ARCHITECTURE.md) - Complete system specification
+
+**Quick View:** All diagrams can be instantly viewed and converted to PNG at [Mermaid Live Editor](https://mermaid.live) - just copy/paste the `.mmd` file content!
+
 ## Model Performance (Test Set - 20% Unseen Data)
 All models use regularization to prevent overfitting:
 
