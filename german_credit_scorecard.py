@@ -239,6 +239,39 @@ print("Model Comparison (Train vs Test):")
 for name, res in model_results.items():
     print(f"{name}: Train Acc {res['acc_train']:.4f}, AUC {res['auc_train']:.4f} | Test Acc {res['acc_test']:.4f}, AUC {res['auc_test']:.4f}")
 
+# Plot Model Comparison
+model_names = list(model_results.keys())
+train_aucs = [model_results[name]['auc_train'] for name in model_names]
+test_aucs = [model_results[name]['auc_test'] for name in model_names]
+
+plt.figure(figsize=(10,6))
+x = np.arange(len(model_names))
+plt.bar(x - 0.2, train_aucs, 0.4, label='Train AUC', color='blue', alpha=0.7)
+plt.bar(x + 0.2, test_aucs, 0.4, label='Test AUC', color='orange', alpha=0.7)
+plt.xlabel('Models')
+plt.ylabel('AUC')
+plt.title('Model AUC Comparison: Train vs Test')
+plt.xticks(x, model_names, rotation=45)
+plt.legend()
+plt.tight_layout()
+plt.savefig('model_comparison_auc.png')
+plt.close()
+print("Model comparison AUC plot saved to 'model_comparison_auc.png'")
+
+# Plot WOE for top feature
+top_feature = iv_series.index[0]
+woe_data = woe_tables[top_feature]
+plt.figure(figsize=(10,6))
+plt.bar(woe_data[top_feature].astype(str), woe_data['WOE'], color='green', alpha=0.7)
+plt.xlabel(f'Bins of {top_feature}')
+plt.ylabel('Weight of Evidence (WOE)')
+plt.title(f'WOE Transformation for {top_feature} (IV = {iv_series[top_feature]:.2f})')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig('woe_top_feature.png')
+plt.close()
+print("WOE plot for top feature saved to 'woe_top_feature.png'")
+
 # For scorecard, use Logistic Regression fitted on full data
 model = LogisticRegression(random_state=42, solver='lbfgs', max_iter=1000)
 model.fit(X, y)
