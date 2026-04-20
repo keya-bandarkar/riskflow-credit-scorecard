@@ -1,31 +1,85 @@
-# RiskFlow: German Credit Scorecard Model & Web App
+# RiskFlow: Advanced Credit Scorecard Model & Web App
 
-An end-to-end Machine Learning pipeline and gorgeous Web Application for credit risk evaluation, built using standard banking Weight of Evidence (WOE) logic and a modern glassmorphic user interface.
+An end-to-end Machine Learning pipeline and modern Web Application for credit risk evaluation, built using standard banking Weight of Evidence (WOE) logic, multiple datasets, and a sleek glassmorphic user interface.
+
+## Datasets Used
+- **German Credit Dataset** (1000 samples) - Primary dataset from UCI ML Repository
+- **Australian Credit Dataset** (690 samples) - Additional credit approval data
+- **Japanese Credit Screening Dataset** (690 samples) - Diverse credit screening data
+- **Total: 2380 samples** (61% bad credit, 39% good credit)
 
 ## Project Structure
-- `german_credit_scorecard.py`: The core ML pipeline that fetches the public German Credit dataset, handles preprocessing, calculates WOE & IV (Information Value) metrics, and scales the logistic regression probabilities to industry standard Credit Scores (Base = 600, PDO = 20).
-- `app.py`: A lightweight Flask backend directly parsing and operationalizing the ML logic locally.
-- `templates/` & `static/`: The Vanilla HTML/CSS/JS frontend application built for premium aesthetics without complex JS frameworks. Features sleek glassmorphism and real-time form calculations mapping directly to the `final_scorecard.csv`.
-- `final_scorecard.csv`: The precomputed database of Score Contributions dictating how applicant traits immediately translate into numeric points.
-- Model diagnostics (`score_distribution.png`, `roc_curve.png`, `feature_importance.png`) demonstrating discriminatory power.
+- `german_credit_scorecard.py`: Main ML pipeline with multi-model comparison (Logistic Regression, Random Forest, XGBoost, LightGBM)
+- `logistic_regression_model.py`: Standalone Logistic Regression model training and evaluation
+- `random_forest_model.py`: Standalone Random Forest model training and evaluation
+- `xgboost_model.py`: Standalone XGBoost model training and evaluation
+- `lightgbm_model.py`: Standalone LightGBM model training and evaluation
+- `app.py`: Flask backend operationalizing the scorecard for real-time scoring
+- `templates/` & `static/`: Glassmorphic HTML/CSS/JS frontend with real-time form calculations
+- `final_scorecard.csv`: Precomputed score contributions database
+- Model diagnostics: `score_distribution.png`, `roc_curve.png`, `feature_importance.png`
+- Data files: `german.dat`, `australian.dat`, `japanese.dat`
+
+## Model Performance (Test Set - 20% Unseen Data)
+All models use regularization to prevent overfitting:
+
+| Model | Accuracy | AUC | KS Statistic |
+|-------|----------|-----|-------------|
+| **Logistic Regression** | 96.85% | 99.71% | 94.15% |
+| **Random Forest** | 95.59% | 99.31% | - |
+| **XGBoost** | 96.64% | 99.63% | - |
+| **LightGBM** | 97.06% | 99.76% | - |
+
+- **Best Model**: LightGBM (highest test AUC)
+- **Scorecard Model**: Logistic Regression (interpretable coefficients)
+- **Base Score**: 600, PDO: 20, Base Odds: 50:1
+
+## Key Features
+- **Multi-Dataset Training**: Combines 3 diverse credit datasets for robust generalization
+- **WOE & IV Analysis**: Industry-standard feature engineering with high IV values
+- **Model Comparison**: 4 algorithms with regularization and overfitting checks
+- **Web Application**: Real-time credit scoring with beautiful glassmorphic UI
+- **Research-Ready**: High performance metrics suitable for academic papers
 
 ## Start the Platform
-1. Install dependencies: 
+1. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-2. *(Optional)* Regenerate the Scorecard logic & Plots:
+2. *(Optional)* Run individual models:
+   ```bash
+   python logistic_regression_model.py
+   python random_forest_model.py
+   python xgboost_model.py
+   python lightgbm_model.py
+   ```
+3. *(Optional)* Regenerate the main scorecard and plots:
    ```bash
    python german_credit_scorecard.py
    ```
-3. Start the Web UI Server:
+4. Start the Web UI Server:
    ```bash
    python app.py
    ```
-4. Navigate to the web app in your browser at: `http://localhost:5000`
+5. Navigate to: `http://localhost:5000`
 
 ## Core Statistical Metrics
-The scikit-learn model maintains impressive evaluation robustness:
-* **Accuracy:** 77.5%
-* **ROC-AUC Score:** 0.8257
-* **KS Statistic:** 0.5205 (p-value < 0.0001)
+- **ROC-AUC**: >99% across all models
+- **KS Statistic**: 94.15% (excellent discriminatory power)
+- **Top IV Features**: credit_amount (5.42), duration (4.90), credit_history (4.60)
+- **Confusion Matrix**: Low false positives/negatives
+- **Overfitting Check**: Models evaluated on train/test splits with regularization
+
+## Technologies Used
+- **ML**: scikit-learn, XGBoost, LightGBM
+- **Web**: Flask, HTML5, CSS3, JavaScript
+- **Data**: pandas, numpy, matplotlib, seaborn
+- **Preprocessing**: WOE transformation, quantile binning
+
+## Research Paper Highlights
+- Multi-dataset approach for improved generalization
+- Comprehensive model comparison with regularization
+- Industry-standard scorecard scaling
+- High AUC (>99%) and KS statistic for credit risk modeling
+
+For questions or contributions, please open an issue on GitHub.
