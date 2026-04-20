@@ -1,0 +1,142 @@
+graph LR
+    subgraph InputData["Input Data"]
+        Dataset1["German Credit<br/>1,000 rows"]
+        Dataset2["Australian Credit<br/>690 rows"]
+        Dataset3["Japanese Credit<br/>690 rows"]
+    end
+    
+    subgraph DataIntegration["Integration"]
+        Merge["Merge & Align<br/>Features"]
+        Combined["Combined Data<br/>2,380 rows<br/>20 features"]
+    end
+    
+    subgraph DataQuality["Quality Control"]
+        Missing["Handle Missing<br/>Values"]
+        Outliers["Detect Outliers<br/>& Anomalies"]
+        Validation["Validate Data<br/>Ranges"]
+    end
+    
+    subgraph SplitData["Data Partitioning"]
+        TrainSet["Training Set<br/>70% = 1,666 rows"]
+        TestSet["Test Set<br/>30% = 714 rows"]
+    end
+    
+    subgraph FeatureTransform["Feature Engineering"]
+        Discrete["Discretize<br/>Continuous Features"]
+        CalcWOE["Calculate WOE<br/>Log Odds Ratio"]
+        CalcIV["Calculate IV<br/>Information Value"]
+        EncodedSet["Encoded Features<br/>WOE Values"]
+    end
+    
+    subgraph ModelTraining["Model Training"]
+        TrainLR["Train LR<br/>Logistic Regression"]
+        TrainRF["Train RF<br/>Random Forest"]
+        TrainXGB["Train XGB<br/>XGBoost"]
+        TrainLGB["Train LGB<br/>LightGBM"]
+    end
+    
+    subgraph Prediction["Predictions"]
+        PredLR["LR Predictions<br/>Probabilities"]
+        PredRF["RF Predictions<br/>Probabilities"]
+        PredXGB["XGB Predictions<br/>Probabilities"]
+        PredLGB["LGB Predictions<br/>Probabilities"]
+    end
+    
+    subgraph ModelEval["Model Evaluation"]
+        MetricsLR["LR Metrics<br/>AUC=99.65%"]
+        MetricsRF["RF Metrics<br/>AUC=99.14%"]
+        MetricsXGB["XGB Metrics<br/>AUC=99.07%"]
+        MetricsLGB["LGB Metrics<br/>AUC=99.21%"]
+    end
+    
+    subgraph Selection["Selection"]
+        BestModel["Best: Logistic Regression<br/>AUC=99.65%"]
+    end
+    
+    subgraph ScorecardGen["Scorecard Generation"]
+        ExtractCoef["Extract Coefficients<br/>Intercept = 2.814"]
+        BinScores["Compute Bin Scores<br/>WOE × Coefficient"]
+        ScaleFinal["Scale to 300-850<br/>PDO=28.85, Offset=487.12"]
+        FinalCard["Final Scorecard<br/>Variable, Bin, Score"]
+    end
+    
+    subgraph Deployment["Deployment"]
+        SaveCSV["Save as CSV<br/>final_scorecard.csv"]
+        LoadApp["Load in Flask App<br/>In-Memory Cache"]
+    end
+    
+    subgraph Runtime["Runtime Scoring"]
+        UserInput["User Input<br/>Applicant Features"]
+        MapBins["Map to Bins<br/>Feature Values"]
+        LookupWOE["Lookup WOE<br/>From Scorecard"]
+        SumScore["Sum Score<br/>Contributions"]
+        RiskLevel["Assign Risk<br/>Good/Fair/Poor"]
+    end
+    
+    subgraph Output["Output"]
+        ScoreResult["Return Score<br/>300-850"]
+        RiskResult["Return Risk Level<br/>JSON Response"]
+    end
+    
+    Dataset1 --> Merge
+    Dataset2 --> Merge
+    Dataset3 --> Merge
+    
+    Merge --> Combined
+    Combined --> Missing
+    Missing --> Outliers
+    Outliers --> Validation
+    
+    Validation --> TrainSet
+    Validation --> TestSet
+    
+    TrainSet --> Discrete
+    Discrete --> CalcWOE
+    CalcWOE --> CalcIV
+    CalcIV --> EncodedSet
+    
+    EncodedSet --> TrainLR
+    EncodedSet --> TrainRF
+    EncodedSet --> TrainXGB
+    EncodedSet --> TrainLGB
+    
+    TestSet --> PredLR
+    TestSet --> PredRF
+    TestSet --> PredXGB
+    TestSet --> PredLGB
+    
+    TrainLR --> PredLR
+    TrainRF --> PredRF
+    TrainXGB --> PredXGB
+    TrainLGB --> PredLGB
+    
+    PredLR --> MetricsLR
+    PredRF --> MetricsRF
+    PredXGB --> MetricsXGB
+    PredLGB --> MetricsLGB
+    
+    MetricsLR --> BestModel
+    MetricsRF --> BestModel
+    MetricsXGB --> BestModel
+    MetricsLGB --> BestModel
+    
+    BestModel --> ExtractCoef
+    EncodedSet --> ExtractCoef
+    ExtractCoef --> BinScores
+    BinScores --> ScaleFinal
+    ScaleFinal --> FinalCard
+    
+    FinalCard --> SaveCSV
+    SaveCSV --> LoadApp
+    
+    UserInput --> MapBins
+    LoadApp --> LookupWOE
+    MapBins --> LookupWOE
+    LookupWOE --> SumScore
+    SumScore --> RiskLevel
+    
+    RiskLevel --> ScoreResult
+    RiskLevel --> RiskResult
+    
+    ScoreResult --> Output
+    RiskResult --> Output

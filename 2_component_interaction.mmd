@@ -1,0 +1,90 @@
+graph TB
+    subgraph Client["Client Layer"]
+        Browser["Web Browser<br/>User Interface"]
+        HTMLForm["HTML Form<br/>Applicant Input"]
+    end
+    
+    subgraph Web["Web Framework"]
+        FlaskServer["Flask Server<br/>Port 5000"]
+        ConfigRoute["GET /config<br/>Return Scorecard"]
+        CalcRoute["POST /calculate<br/>Score Applicant"]
+        JsonResp["JSON Response<br/>Score + Risk"]
+    end
+    
+    subgraph Processing["Processing Engine"]
+        FeatureLookup["Feature Lookup<br/>Input Validation"]
+        BinAssignment["Bin Assignment<br/>Feature Values"]
+        WOETransform["WOE Transform<br/>Score Lookup"]
+        ScoreAgg["Score Aggregation<br/>Sum Contributions"]
+    end
+    
+    subgraph DataStore["Data Storage"]
+        ScorecardCSV["final_scorecard.csv<br/>Pre-computed Scores"]
+        InMemCache["In-Memory Cache<br/>Pandas DataFrame"]
+        ConfigJSON["Config JSON<br/>Feature Metadata"]
+    end
+    
+    subgraph ML["ML Pipeline"]
+        Preprocessing["Preprocessing<br/>Data Cleaning"]
+        FeatureEng["Feature Engineering<br/>WOE/IV Computation"]
+        ModelTraining["Model Training<br/>4 Models"]
+        Evaluation["Model Evaluation<br/>Cross-Validation"]
+        Selection["Model Selection<br/>Best Performer"]
+    end
+    
+    subgraph Visualization["Visualization & Analysis"]
+        ROCPlot["ROC Curve Plot<br/>Model Performance"]
+        DistPlot["Score Distribution<br/>Good vs Bad"]
+        FeaturePlot["Feature Importance<br/>IV Ranking"]
+        ComparisonPlot["Model Comparison<br/>AUC Bar Chart"]
+        WOEPlot["WOE Transformation<br/>Top Features"]
+    end
+    
+    subgraph Version["Version Control"]
+        GitRepo["GitHub Repository<br/>riskflow-credit-scorecard"]
+        Commits["Code & Data<br/>Version History"]
+    end
+    
+    Browser -->|Input Data| HTMLForm
+    HTMLForm -->|JavaScript| FlaskServer
+    
+    FlaskServer -->|Route Request| ConfigRoute
+    FlaskServer -->|Route Request| CalcRoute
+    
+    ConfigRoute -->|Read| InMemCache
+    ConfigRoute -->|Return| JsonResp
+    
+    CalcRoute -->|Process| FeatureLookup
+    FeatureLookup -->|Assign| BinAssignment
+    BinAssignment -->|Lookup| InMemCache
+    InMemCache -->|WOE Values| WOETransform
+    WOETransform -->|Aggregate| ScoreAgg
+    ScoreAgg -->|Calculate Risk| JsonResp
+    
+    JsonResp -->|Display| Browser
+    
+    ScorecardCSV -->|Load on Start| InMemCache
+    ConfigJSON -->|Load on Start| InMemCache
+    
+    Preprocessing -->|Output| FeatureEng
+    FeatureEng -->|Output| ModelTraining
+    ModelTraining -->|Evaluate| Evaluation
+    Evaluation -->|Compare| Selection
+    Selection -->|Generate| ScorecardCSV
+    Selection -->|Config| ConfigJSON
+    
+    Selection -->|Model Results| ROCPlot
+    Selection -->|Scores| DistPlot
+    FeatureEng -->|IV Values| FeaturePlot
+    Evaluation -->|Metrics| ComparisonPlot
+    FeatureEng -->|WOE Bins| WOEPlot
+    
+    ROCPlot -->|Save| GitRepo
+    DistPlot -->|Save| GitRepo
+    FeaturePlot -->|Save| GitRepo
+    ComparisonPlot -->|Save| GitRepo
+    WOEPlot -->|Save| GitRepo
+    
+    ScorecardCSV -->|Commit| GitRepo
+    ConfigJSON -->|Commit| GitRepo
+    Selection -->|Code| Commits

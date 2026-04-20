@@ -1,0 +1,81 @@
+graph TB
+    subgraph DataLayer["📊 Data Layer"]
+        German["German Credit Dataset<br/>1000 samples"]
+        Australian["Australian Credit Dataset<br/>690 samples"]
+        Japanese["Japanese Credit Dataset<br/>690 samples"]
+    end
+    
+    subgraph PreprocessingLayer["⚙️ Preprocessing & Feature Engineering"]
+        Loading["Data Loading &<br/>Integration"]
+        Cleaning["Data Cleaning<br/>& Validation"]
+        WOE["WOE/IV Transformation<br/>Feature Engineering"]
+        Binning["Feature Binning<br/>& Encoding"]
+    end
+    
+    subgraph ModelLayer["🧠 Model Layer"]
+        LR["Logistic Regression<br/>Max: 99.65% AUC"]
+        RF["Random Forest<br/>Max: 99.14% AUC"]
+        XGB["XGBoost<br/>Max: 99.07% AUC"]
+        LGB["LightGBM<br/>Max: 99.21% AUC"]
+    end
+    
+    subgraph EvaluationLayer["📈 Evaluation Layer"]
+        Metrics["Model Metrics<br/>Accuracy, AUC, KS"]
+        Comparison["Model Comparison<br/>& Selection"]
+        Validation["Cross-Validation<br/>& Testing"]
+    end
+    
+    subgraph ScorecardLayer["📋 Scorecard Layer"]
+        Scaling["Score Scaling<br/>Factor & Offset"]
+        Mapping["WOE to Score<br/>Mapping"]
+        Generation["Scorecard CSV<br/>Generation"]
+    end
+    
+    subgraph ApplicationLayer["🌐 Web Application Layer"]
+        API["Flask REST API<br/>/config, /calculate"]
+        WebApp["Frontend<br/>HTML/CSS/JS"]
+        Cache["Scorecard Cache<br/>final_scorecard.csv"]
+    end
+    
+    subgraph OutputLayer["📤 Output Layer"]
+        Plots["Visualization<br/>ROC, Distribution, Importance"]
+        Logs["Evaluation Logs<br/>& Reports"]
+        Repo["GitHub Repository<br/>Version Control"]
+    end
+    
+    German --> Loading
+    Australian --> Loading
+    Japanese --> Loading
+    
+    Loading --> Cleaning
+    Cleaning --> WOE
+    WOE --> Binning
+    
+    Binning --> LR
+    Binning --> RF
+    Binning --> XGB
+    Binning --> LGB
+    
+    LR --> Metrics
+    RF --> Metrics
+    XGB --> Metrics
+    LGB --> Metrics
+    
+    Metrics --> Comparison
+    Comparison --> Validation
+    
+    Validation --> Scaling
+    Scaling --> Mapping
+    Mapping --> Generation
+    
+    Generation --> Cache
+    Cache --> API
+    Cache --> WebApp
+    
+    LR --> Plots
+    Metrics --> Plots
+    Validation --> Logs
+    Plots --> Repo
+    Logs --> Repo
+    
+    API --> WebApp

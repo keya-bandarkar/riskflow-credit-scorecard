@@ -1,0 +1,91 @@
+graph TB
+    subgraph User["End User"]
+        User1["👤 User/Administrator<br/>Local Machine"]
+    end
+    
+    subgraph Local["Local Development Environment"]
+        CodeEditor["VS Code<br/>Python IDE"]
+        Scripts["Python Scripts<br/>Training & Evaluation"]
+        VirtualEnv["Python 3.14<br/>Virtual Environment"]
+    end
+    
+    subgraph Training["Training Pipeline<br/>Local Execution"]
+        DataDownload["Download Datasets<br/>3 Sources"]
+        Preprocess["Preprocessing<br/>german_credit_scorecard.py"]
+        TrainModels["Train 4 Models<br/>Individual Scripts"]
+        Evaluate["Evaluate & Compare<br/>Model Metrics"]
+        Generate["Generate Scorecard<br/>final_scorecard.csv"]
+    end
+    
+    subgraph LocalApp["Local Flask Application"]
+        FlaskDev["Flask Development Server<br/>Port 5000<br/>Localhost:5000"]
+        StaticFiles["Static Assets<br/>CSS, JavaScript"]
+        Templates["HTML Templates<br/>User Interface"]
+    end
+    
+    subgraph Browser["Web Browser"]
+        UI["Credit Scorecard UI<br/>Real-time Scoring"]
+    end
+    
+    subgraph DataDir["Local File System"]
+        ScorecardFile["final_scorecard.csv<br/>Pre-computed Scores"]
+        DataFile["german_credit_data.csv<br/>Reference Data"]
+        PlotFiles["Visualization Files<br/>PNG Plots"]
+    end
+    
+    subgraph GitHub["GitHub Repository"]
+        RepoCode["Source Code<br/>*.py files"]
+        RepoData["Scorecard CSV<br/>Model Data"]
+        RepoPlots["Visualization Plots<br/>Analysis Charts"]
+        RepoDocs["Documentation<br/>README, Architecture"]
+        RepoReq["Dependencies<br/>requirements.txt"]
+    end
+    
+    subgraph Version["Version Control"]
+        GitLocal["Local Git<br/>.git folder"]
+        GitRemote["GitHub Remote<br/>Origin"]
+    end
+    
+    subgraph Deployment["Deployment Ready<br/>Production Setup"]
+        Docker["Docker Container<br/>Containerized App"]
+        Gunicorn["Gunicorn WSGI<br/>Application Server"]
+        Nginx["Nginx Web Server<br/>Reverse Proxy"]
+        Database["Optional Database<br/>Audit Logs"]
+    end
+    
+    User1 --> CodeEditor
+    CodeEditor --> Scripts
+    Scripts --> VirtualEnv
+    
+    VirtualEnv --> DataDownload
+    DataDownload --> Preprocess
+    Preprocess --> TrainModels
+    TrainModels --> Evaluate
+    Evaluate --> Generate
+    
+    Generate --> ScorecardFile
+    Generate --> DataFile
+    Evaluate --> PlotFiles
+    
+    ScorecardFile --> FlaskDev
+    StaticFiles --> FlaskDev
+    Templates --> FlaskDev
+    
+    FlaskDev --> UI
+    UI -->|HTTP Requests| FlaskDev
+    
+    Scripts -->|Commit| GitLocal
+    ScorecardFile -->|Commit| GitLocal
+    PlotFiles -->|Commit| GitLocal
+    
+    GitLocal -->|Push| GitRemote
+    
+    RepoCode --> Docker
+    RepoData --> Docker
+    RepoReq --> Docker
+    
+    Docker --> Gunicorn
+    Gunicorn --> Nginx
+    Nginx --> User1
+    
+    Database -->|Audit Trail| Gunicorn

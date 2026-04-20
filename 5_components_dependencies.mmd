@@ -1,0 +1,131 @@
+graph TB
+    subgraph Core["Core System Components"]
+        direction TB
+        
+        subgraph DataSrc["Data Sources"]
+            GermanURL["🔗 German Credit URL"]
+            AustralianURL["🔗 Australian Credit URL"]
+            JapaneseURL["🔗 Japanese Credit URL"]
+        end
+        
+        subgraph PreProc["Preprocessing Module"]
+            LoadData["load_data_from_urls"]
+            CleanData["clean_and_validate"]
+            MergeDatasets["merge_datasets"]
+            HandleMissing["handle_missing_values"]
+        end
+        
+        subgraph FeatEng["Feature Engineering"]
+            ComputeWOE["compute_woe<br/>Weight of Evidence"]
+            ComputeIV["compute_iv<br/>Information Value"]
+            BinFeatures["bin_features<br/>Discretization"]
+            EncodeFeatures["encode_woe<br/>WOE Mapping"]
+        end
+        
+        subgraph Models["Model Components"]
+            LogRegModel["LogisticRegression<br/>Model"]
+            RFModel["RandomForestClassifier<br/>Model"]
+            XGBModel["XGBClassifier<br/>Model"]
+            LGBModel["LGBMClassifier<br/>Model"]
+        end
+        
+        subgraph Eval["Evaluation Module"]
+            CalcMetrics["calculate_metrics<br/>AUC, Acc, KS"]
+            CompareModels["compare_models<br/>Ranking"]
+            SelectBest["select_best_model<br/>Optimization"]
+        end
+        
+        subgraph Scorecard["Scorecard Module"]
+            GenScorecard["generate_scorecard<br/>WOE to Score"]
+            ScaleScores["scale_scores<br/>PDO & Offset"]
+            SaveScorecard["save_to_csv<br/>final_scorecard.csv"]
+        end
+        
+        subgraph Viz["Visualization Module"]
+            PlotROC["plot_roc_curve"]
+            PlotDist["plot_score_distribution"]
+            PlotFeatures["plot_feature_importance"]
+            PlotComparison["plot_model_comparison"]
+            PlotWOE["plot_woe_features"]
+        end
+    end
+    
+    subgraph AppLayer["Application Layer"]
+        FlaskApp["Flask Application<br/>app.py"]
+        
+        ConfigEndpoint["GET /config<br/>Returns scorecard info"]
+        CalcEndpoint["POST /calculate<br/>Scores applicants"]
+        
+        HTMLTemplate["templates/index.html<br/>User Interface"]
+        JSScript["static/js/app.js<br/>Client Logic"]
+        CSSStyle["static/css/style.css<br/>Styling"]
+        
+        ScorecardLoader["Load final_scorecard.csv<br/>In-Memory"]
+        ScoreCalculator["Calculate Score<br/>WOE Lookup + Sum"]
+    end
+    
+    subgraph Utilities["Utility Modules"]
+        ConfigMgr["Configuration Manager"]
+        Logger["Logging Module"]
+        FileHandler["File I/O Handler"]
+    end
+    
+    subgraph Storage["Data Storage"]
+        ScorecardCSV["final_scorecard.csv"]
+        ConfigJSON["config.json"]
+        DataCSV["german_credit_data.csv"]
+    end
+    
+    GermanURL --> LoadData
+    AustralianURL --> LoadData
+    JapaneseURL --> LoadData
+    
+    LoadData --> CleanData
+    CleanData --> MergeDatasets
+    MergeDatasets --> HandleMissing
+    
+    HandleMissing --> BinFeatures
+    BinFeatures --> ComputeWOE
+    ComputeWOE --> ComputeIV
+    ComputeIV --> EncodeFeatures
+    
+    EncodeFeatures --> LogRegModel
+    EncodeFeatures --> RFModel
+    EncodeFeatures --> XGBModel
+    EncodeFeatures --> LGBModel
+    
+    LogRegModel --> CalcMetrics
+    RFModel --> CalcMetrics
+    XGBModel --> CalcMetrics
+    LGBModel --> CalcMetrics
+    
+    CalcMetrics --> CompareModels
+    CompareModels --> SelectBest
+    
+    SelectBest --> GenScorecard
+    GenScorecard --> ScaleScores
+    ScaleScores --> SaveScorecard
+    
+    SaveScorecard --> ScorecardCSV
+    SaveScorecard --> ConfigJSON
+    
+    CalcMetrics --> PlotROC
+    CalcMetrics --> PlotDist
+    ComputeIV --> PlotFeatures
+    CompareModels --> PlotComparison
+    ComputeWOE --> PlotWOE
+    
+    ScorecardCSV --> ScorecardLoader
+    ConfigJSON --> ScorecardLoader
+    
+    ScorecardLoader --> ScoreCalculator
+    HTMLTemplate --> FlaskApp
+    JSScript --> FlaskApp
+    CSSStyle --> FlaskApp
+    
+    ConfigEndpoint --> ScorecardLoader
+    CalcEndpoint --> ScoreCalculator
+    
+    FlaskApp -.->|Uses| ConfigMgr
+    FlaskApp -.->|Uses| Logger
+    SaveScorecard -.->|Uses| FileHandler
