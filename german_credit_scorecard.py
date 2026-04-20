@@ -209,12 +209,12 @@ y = df_woe['target']
 # Split into train and test sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Initialize models
+# Initialize models with regularization to reduce overfitting
 models = {
     'Logistic Regression': LogisticRegression(random_state=42, solver='lbfgs', max_iter=1000),
-    'Random Forest': RandomForestClassifier(random_state=42, n_estimators=100),
-    'XGBoost': XGBClassifier(random_state=42, eval_metric='logloss'),
-    'LightGBM': LGBMClassifier(random_state=42, verbosity=-1)
+    'Random Forest': RandomForestClassifier(random_state=42, n_estimators=100, max_depth=5, min_samples_split=10, min_samples_leaf=5),
+    'XGBoost': XGBClassifier(random_state=42, eval_metric='logloss', max_depth=3, min_child_weight=1, subsample=0.8, colsample_bytree=0.8),
+    'LightGBM': LGBMClassifier(random_state=42, verbosity=-1, max_depth=3, min_child_samples=10, subsample=0.8, colsample_bytree=0.8)
 }
 
 best_model = None
@@ -223,21 +223,21 @@ model_results = {}
 
 for name, model in models.items():
     model.fit(X_train, y_train)
+    # Training metrics
+    y_pred_prob_train = model.predict_proba(X_train)[:, 1]
+    acc_train = accuracy_score(y_train, y_pred_prob_train > 0.5)
+    auc_train = roc_auc_score(y_train, y_pred_prob_train)
+    # Test metrics
     y_pred_prob = model.predict_proba(X_test)[:, 1]
     y_pred = model.predict(X_test)
-    
-    auc = roc_auc_score(y_test, y_pred_prob)
-    acc = accuracy_score(y_test, y_pred)
-    model_results[name] = {'auc': auc, 'acc': acc, 'model': model}
-    
-    if auc > best_auc:
-        best_auc = auc
-        best_model = model
+    acc_test = accuracy_score(y_test, y_pred)
+    auc_test = roc_auc_score(y_test, y_pred_prob)
+    model_results[name] = {'acc_train': acc_train, 'auc_train': auc_train, 'acc_test': acc_test, 'auc_test': auc_test, 'model': model}
 
-print(f"Best Model: {max(model_results, key=lambda x: model_results[x]['auc'])}")
-print("Model Comparison (on Test Set):")
+print(f"Best Model: {max(model_results, key=lambda x: model_results[x]['auc_test'])}")
+print("Model Comparison (Train vs Test):")
 for name, res in model_results.items():
-    print(f"{name}: Accuracy {res['acc']:.4f}, AUC {res['auc']:.4f}")
+    print(f"{name}: Train Acc {res['acc_train']:.4f}, AUC {res['auc_train']:.4f} | Test Acc {res['acc_test']:.4f}, AUC {res['auc_test']:.4f}")
 
 # For scorecard, use Logistic Regression fitted on full data
 model = LogisticRegression(random_state=42, solver='lbfgs', max_iter=1000)
