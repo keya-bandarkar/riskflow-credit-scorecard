@@ -8,11 +8,16 @@
 import pandas as pd
 import numpy as np
 from sklearn.datasets import fetch_openml
+from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
 from sklearn.metrics import accuracy_score, roc_auc_score, confusion_matrix, roc_curve
 from scipy.stats import ks_2samp
 import matplotlib.pyplot as plt
 import seaborn as sns
+import urllib.request
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -26,23 +31,48 @@ plt.rcParams['figure.figsize'] = (10, 6)
 # We will use `sklearn.datasets.fetch_openml` to load the dataset.
 
 # %%
-print("Loading dataset...")
-data = fetch_openml(name='credit-g', version=1, as_frame=True, parser='auto')
-df = data.frame
+print("Loading datasets...")
+# Load German Credit Dataset
+data_german = fetch_openml(name='credit-g', version=1, as_frame=True, parser='auto')
+df_german = data_german.frame
+df_german['target'] = df_german['class'].apply(lambda x: 0 if x == 'good' else 1).astype(int)
+df_german.drop('class', axis=1, inplace=True)
+
+# Load Australian Credit Dataset
+url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/australian/australian.dat'
+urllib.request.urlretrieve(url, 'australian.dat')
+df_australian = pd.read_csv('australian.dat', sep=r'\s+', header=None, names=['target'] + [f'A{i}' for i in range(1,15)])
+print("Australian data shape:", df_australian.shape)
+print("Target unique:", df_australian['target'].unique())
+print("Nulls:", df_australian.isnull().sum().sum())
+df_australian['target'] = df_australian['target'].astype(int)
+
+# Rename columns to match German
+column_mapping = {
+    'A1': 'checking_status',
+    'A2': 'duration',
+    'A3': 'credit_history',
+    'A4': 'purpose',
+    'A5': 'credit_amount',
+    'A6': 'savings_status',
+    'A7': 'employment',
+    'A8': 'installment_commitment',
+    'A9': 'personal_status',
+    'A10': 'other_parties',
+    'A11': 'residence_since',
+    'A12': 'property_magnitude',
+    'A13': 'age',
+    'A14': 'other_payment_plans',
+    'target': 'target'
+}
+df_australian.rename(columns=column_mapping, inplace=True)
+
+# Combine datasets
+df = pd.concat([df_german, df_australian], ignore_index=True)
 print("-" * 50)
-print("Data Shape:", df.shape)
+print("Combined Data Shape:", df.shape)
 print("Target Distribution:")
-print(df['class'].value_counts(normalize=True))
-
-# %% [markdown]
-# ## 2. Data Preprocessing
-# We define the target variable: 0 = Good, 1 = Bad. 
-# In modeling probability of default (PD), 'Bad' is considered the event.
-
-# %%
-# Convert Target
-df['target'] = df['class'].apply(lambda x: 0 if x == 'good' else 1).astype(int)
-df.drop('class', axis=1, inplace=True)
+print(df['target'].value_counts(normalize=True))
 
 # Separate features by type
 categorical_cols = df.select_dtypes(include=['category', 'object']).columns.tolist()
@@ -152,7 +182,40 @@ for col in selected_features:
 X = df_woe[selected_features]
 y = df_woe['target']
 
-# Initializing Logistic Regression
+# Split into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Initialize models
+models = {
+    'Logistic Regression': LogisticRegression(random_state=42, solver='lbfgs', max_iter=1000),
+    'Random Forest': RandomForestClassifier(random_state=42, n_estimators=100),
+    'XGBoost': XGBClassifier(random_state=42, eval_metric='logloss'),
+    'LightGBM': LGBMClassifier(random_state=42, verbosity=-1)
+}
+
+best_model = None
+best_auc = 0
+model_results = {}
+
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    y_pred_prob = model.predict_proba(X_test)[:, 1]
+    y_pred = model.predict(X_test)
+    
+    auc = roc_auc_score(y_test, y_pred_prob)
+    acc = accuracy_score(y_test, y_pred)
+    model_results[name] = {'auc': auc, 'acc': acc, 'model': model}
+    
+    if auc > best_auc:
+        best_auc = auc
+        best_model = model
+
+print(f"Best Model: {max(model_results, key=lambda x: model_results[x]['auc'])}")
+print("Model Comparison (on Test Set):")
+for name, res in model_results.items():
+    print(f"{name}: Accuracy {res['acc']:.4f}, AUC {res['auc']:.4f}")
+
+# For scorecard, use Logistic Regression fitted on full data
 model = LogisticRegression(random_state=42, solver='lbfgs', max_iter=1000)
 model.fit(X, y)
 
